@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QComboBox, QPushButton, QFileDialog, QMessageBox, QStatusBar,
     QGroupBox, QSplitter, QProgressBar, QFrame, QApplication,
-    QLineEdit, QTextEdit
+    QTextEdit
 )
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
@@ -271,11 +271,6 @@ class MainWindow(QMainWindow):
         device_group = QGroupBox("Device Selection")
         device_layout = QVBoxLayout(device_group)
 
-        # Search/filter
-        self.device_search = QLineEdit()
-        self.device_search.setPlaceholderText("Search device types...")
-        device_layout.addWidget(self.device_search)
-
         # Combo box
         self.device_combo = QComboBox()
         self.device_combo.addItem("-- Select Device Type --")
@@ -397,7 +392,6 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self):
         self.device_combo.currentIndexChanged.connect(self._on_device_selected)
-        self.device_search.textChanged.connect(self._filter_devices)
         self.btn_download_template.clicked.connect(self._download_template)
         self.btn_upload_excel.clicked.connect(self._upload_excel)
         self.btn_generate.clicked.connect(self._generate_yaml)
@@ -405,15 +399,6 @@ class MainWindow(QMainWindow):
         self.btn_download_full.clicked.connect(self._download_full_config)
         self.btn_copy_yaml.clicked.connect(self._copy_to_clipboard)
         self.drag_drop.file_dropped.connect(self._on_file_dropped)
-
-    def _filter_devices(self, text: str):
-        """Filter device types based on search text."""
-        self.device_combo.clear()
-        self.device_combo.addItem("-- Select Device Type --")
-        search = text.strip().lower()
-        for name in sorted(DEVICE_TEMPLATES.keys()):
-            if not search or search in name.lower():
-                self.device_combo.addItem(name)
 
     def _on_device_selected(self, index: int):
         """Handle device type selection."""

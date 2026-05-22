@@ -81,29 +81,37 @@ class BaseTemplate(ABC):
         if not bundling_data:
             return None
 
-        bundles = []
+        # Group rows by bundle name — same name merges data tags into one entry
+        grouped = {}
         for row in bundling_data:
+            bundle_name = str(row.get("Bundle Name", "bundle")).strip()
             mode = str(row.get("Mode", "cyclic")).strip().lower()
             data_tags = [t.strip() for t in str(row.get("Data Tags", "")).split(",") if t.strip()]
 
             if not data_tags:
                 continue
 
-            bundle = {}
-            if mode == "cyclic":
-                cyclic_val = row.get("Cyclic (ms)", 3000)
-                bundle["cyclic"] = int(cyclic_val) if cyclic_val else 3000
-            elif mode == "trigger":
-                trigger_tag = row.get("Trigger Tag", "")
-                if trigger_tag:
-                    bundle["trigger"] = str(trigger_tag).strip()
-                trigger_mode = row.get("Trigger Mode", "change")
-                if trigger_mode and str(trigger_mode).strip():
-                    bundle["triggerMode"] = str(trigger_mode).strip()
+            if bundle_name in grouped:
+                # Same bundle name — merge data tags
+                grouped[bundle_name]["data"].extend(data_tags)
+            else:
+                bundle = {"name": bundle_name, "bundletype": mode}
 
-            bundle["data"] = data_tags
-            bundles.append(bundle)
+                if mode == "cyclic":
+                    cyclic_val = row.get("Cyclic (ms)", 3000)
+                    bundle["cyclic"] = int(cyclic_val) if cyclic_val else 3000
+                elif mode == "trigger":
+                    trigger_tag = row.get("Trigger Tag", "")
+                    if trigger_tag:
+                        bundle["trigger"] = str(trigger_tag).strip()
+                    trigger_mode = row.get("Trigger Mode", "change")
+                    if trigger_mode and str(trigger_mode).strip():
+                        bundle["triggerMode"] = str(trigger_mode).strip()
 
+                bundle["data"] = data_tags
+                grouped[bundle_name] = bundle
+
+        bundles = list(grouped.values())
         return bundles if bundles else None
 
     def generate_yaml_dict(self, device_data: Dict[str, Any], tags_data: List[Dict[str, Any]],
