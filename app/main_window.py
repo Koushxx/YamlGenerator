@@ -234,6 +234,11 @@ class MainWindow(QMainWindow):
         self.resize(1300, 850)
         self.setStyleSheet(DARK_STYLESHEET)
 
+        # Set window icon
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "icon.ico")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+
         # Central widget
         central = QWidget()
         self.setCentralWidget(central)
